@@ -81,7 +81,6 @@ export function WishesWall() {
     setMessage("");
     setError(null);
     sfx.success();
-    sfx.sparkle(8);
     const btn = (e.nativeEvent as SubmitEvent).submitter?.getBoundingClientRect();
     if (btn) burstAt(btn.left + btn.width / 2, btn.top);
   }

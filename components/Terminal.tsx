@@ -105,9 +105,6 @@ const COMMANDS: Record<string, (ctx: Ctx) => Line[]> = {
   party: () => {
     megaCelebration();
     sfx.fanfare();
-    sfx.partyHorn();
-    sfx.firework(0.2);
-    sfx.cheer(2);
     return [out(["warn", "  🎉🎉🎉 "], ["fg", "PARTY MODE ENGAGED"], ["warn", " 🎉🎉🎉"])];
   },
   date: () => [
@@ -189,7 +186,6 @@ export function Terminal() {
           for (let i = 1; i <= line.text.length; i++) {
             if (cancelled) return;
             setTyping(line.text.slice(0, i));
-            sfx.key();
             await sleep(28 + Math.random() * 45);
           }
           await sleep(250);

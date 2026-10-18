@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a855f7"/>
+      <stop offset="0.55" stop-color="#f472b6"/>
+      <stop offset="1" stop-color="#f5c86a"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#f97316"/>
+      <stop offset="0.6" stop-color="#fcd34d"/>
+      <stop offset="1" stop-color="#fffbeb"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+  <!-- flame + candle -->
+  <path d="M32 8c3 4 4.5 6.5 4.5 9a4.5 4.5 0 0 1-9 0c0-2.5 1.5-5 4.5-9z" fill="url(#flame)"/>
+  <rect x="30" y="21" width="4" height="10" rx="1" fill="#fff"/>
+  <!-- top tier -->
+  <rect x="18" y="30" width="28" height="11" rx="3" fill="#fff"/>
+  <path d="M18 34c2.3 0 2.3 3 4.7 3s2.3-3 4.6-3 2.4 3 4.7 3 2.3-3 4.7-3 2.3 3 4.6 3 2.4-3 4.7-3" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- bottom tier -->
+  <rect x="12" y="41" width="40" height="13" rx="3.5" fill="#3b1d12"/>
+  <rect x="12" y="45.5" width="40" height="3" fill="#f5c86a"/>
+  <!-- plate -->
+  <rect x="8" y="53" width="48" height="3.5" rx="1.75" fill="#fff" opacity="0.9"/>
+</svg>

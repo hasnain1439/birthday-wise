@@ -4,7 +4,6 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 import { MotionConfig } from "framer-motion";
 import { CakeModal } from "@/components/CakeModal";
 import { WelcomeOverlay } from "@/components/WelcomeOverlay";
-import { sfx } from "@/lib/sound";
 
 const CakeContext = createContext<{ openCake: () => void }>({ openCake: () => {} });
 
@@ -31,10 +30,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         />
         <CakeModal
           open={open}
-          onClose={() => {
-            setOpen(false);
-            sfx.startMusic();
-          }}
+          onClose={() => setOpen(false)}
         />
       </CakeContext.Provider>
     </MotionConfig>

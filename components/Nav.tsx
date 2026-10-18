@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import { Cake, Volume2, VolumeX } from "lucide-react";
 import { useCake } from "@/components/Providers";
-import { sfx, soundStore } from "@/lib/sound";
+import { soundStore } from "@/lib/sound";
 
 const LINKS = [
   { href: "#numbers", label: "Stats" },
@@ -40,10 +40,7 @@ export function Nav() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => {
-              soundStore.toggle();
-              if (!soundStore.getSnapshot()) sfx.startMusic();
-            }}
+            onClick={soundStore.toggle}
             aria-label={muted ? "Unmute sound effects" : "Mute sound effects"}
             aria-pressed={!muted}
             className="rounded-lg border border-line p-2 text-muted transition-colors hover:border-primary/50 hover:text-fg"
