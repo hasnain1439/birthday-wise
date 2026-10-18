@@ -14,7 +14,14 @@ export function useCake() {
 export function Providers({ children }: { children: React.ReactNode }) {
   const [welcome, setWelcome] = useState(true);
   const [open, setOpen] = useState(false);
-  const openCake = useCallback(() => setOpen(true), []);
+  const [autoCelebrate, setAutoCelebrate] = useState(false);
+
+  // Opened from a button on the page: the interactive version (blow candles yourself).
+  const openCake = useCallback(() => {
+    setAutoCelebrate(false);
+    setOpen(true);
+  }, []);
+  const closeCake = useCallback(() => setOpen(false), []);
   const value = useMemo(() => ({ openCake }), [openCake]);
 
   return (
@@ -25,13 +32,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
           open={welcome}
           onEnter={() => {
             setWelcome(false);
+            setAutoCelebrate(true);
             setOpen(true);
           }}
         />
-        <CakeModal
-          open={open}
-          onClose={() => setOpen(false)}
-        />
+        <CakeModal open={open} onClose={closeCake} autoCelebrate={autoCelebrate} />
       </CakeContext.Provider>
     </MotionConfig>
   );

@@ -16,6 +16,7 @@ const CANDLES = [
 ];
 
 const DRIPS = [14, 22, 12, 26, 16, 20, 11, 24, 15, 18];
+const AUTO_CLOSE_MS = 8000;
 
 function Candle({ index, lit, onBlow }: { index: number; lit: boolean; onBlow: (i: number, e: React.MouseEvent<HTMLButtonElement>) => void }) {
   const c = CANDLES[index];
@@ -137,12 +138,28 @@ function GiftBox() {
   );
 }
 
-export function CakeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CakeModal({
+  open,
+  onClose,
+  autoCelebrate = false,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** Skip the gift box and candle blowing — celebrate the moment it opens. */
+  autoCelebrate?: boolean;
+}) {
   const [revealed, setRevealed] = useState(false);
   const [lit, setLit] = useState<boolean[]>(() => CANDLES.map(() => true));
   const [celebrated, setCelebrated] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const remaining = lit.filter(Boolean).length;
+
+  // After the celebration plays out, take the visitor to the landing page.
+  useEffect(() => {
+    if (!celebrated) return;
+    const t = setTimeout(onClose, AUTO_CLOSE_MS);
+    return () => clearTimeout(t);
+  }, [celebrated, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -150,21 +167,35 @@ export function CakeModal({ open, onClose }: { open: boolean; onClose: () => voi
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
     sfx.stopMusic();
-    sfx.drumroll(1.2);
+    if (!autoCelebrate) sfx.drumroll(1.2);
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    const t = setTimeout(() => {
-      setRevealed(true);
-      sfx.tada();
-      sfx.whoosh();
-      sfx.sparkle(14);
-    }, 1250);
+    const timers = [
+      setTimeout(() => {
+        setRevealed(true);
+        sfx.tada();
+        sfx.whoosh();
+        sfx.sparkle(14);
+      }, autoCelebrate ? 0 : 1250),
+    ];
+    if (autoCelebrate) {
+      // Straight from the countdown: blow the candles and party immediately.
+      timers.push(
+        setTimeout(() => {
+          setLit(CANDLES.map(() => false));
+          setCelebrated(true);
+          megaCelebration();
+          sfx.blow();
+          sfx.bigCelebration();
+        }, 350),
+      );
+    }
     return () => {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKey);
-      clearTimeout(t);
+      timers.forEach(clearTimeout);
     };
-  }, [open, onClose]);
+  }, [open, onClose, autoCelebrate]);
 
   function reset() {
     setRevealed(false);
@@ -275,6 +306,15 @@ export function CakeModal({ open, onClose }: { open: boolean; onClose: () => voi
                   {celebrated ? (
                     <>
                       <PartyPopper className="mx-auto size-10 text-gold" />
+                      <div className="mx-auto mt-4 h-1 w-48 overflow-hidden rounded-full bg-white/10" aria-hidden>
+                        <motion.div
+                          className="h-full rounded-full bg-gradient-to-r from-primary via-rose to-gold"
+                          initial={{ width: "0%" }}
+                          animate={{ width: "100%" }}
+                          transition={{ duration: AUTO_CLOSE_MS / 1000, ease: "linear" }}
+                        />
+                      </div>
+                      <p className="mt-2 font-mono text-[11px] text-muted">Taking you to the party…</p>
                       <p className="mt-3 text-pretty text-muted">
                         Your wish has been deployed to production. 🎉 Wishing you a year full of happiness, health, big wins and
                         beautiful moments.
