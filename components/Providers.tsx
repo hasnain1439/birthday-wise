@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { MotionConfig } from "framer-motion";
 import { CakeModal } from "@/components/CakeModal";
 import { WelcomeOverlay } from "@/components/WelcomeOverlay";
+import { installAudioUnlock } from "@/lib/sound";
 
 const CakeContext = createContext<{ openCake: () => void }>({ openCake: () => {} });
 
@@ -23,6 +24,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
   const closeCake = useCallback(() => setOpen(false), []);
   const value = useMemo(() => ({ openCake }), [openCake]);
+
+  useEffect(() => installAudioUnlock(), []);
 
   return (
     <MotionConfig reducedMotion="user">

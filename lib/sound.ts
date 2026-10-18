@@ -26,8 +26,41 @@ function audio() {
     const comp = ctx.createDynamicsCompressor();
     master.connect(comp).connect(ctx.destination);
   }
-  if (ctx.state === "suspended") void ctx.resume();
+  if (ctx.state === "suspended") void ctx.resume().catch(() => {});
   return ctx;
+}
+
+// ---- autoplay unlock ----
+// Browsers keep audio suspended until the visitor taps, clicks or presses a key.
+const unlockListeners = new Set<() => void>();
+
+function isUnlocked() {
+  return ctx?.state === "running";
+}
+
+export const audioStore = {
+  subscribe(cb: () => void) {
+    unlockListeners.add(cb);
+    return () => unlockListeners.delete(cb);
+  },
+  getSnapshot: isUnlocked,
+  getServerSnapshot: () => false,
+};
+
+/** Resume audio on the first user gesture anywhere on the page. */
+export function installAudioUnlock() {
+  const events = ["pointerdown", "keydown", "touchend"] as const;
+  const unlock = () => {
+    const ac = audio();
+    if (!ac) return;
+    ac.resume().then(() => {
+      if (ac.state !== "running") return;
+      events.forEach((e) => window.removeEventListener(e, unlock, true));
+      unlockListeners.forEach((l) => l());
+    }).catch(() => {});
+  };
+  events.forEach((e) => window.addEventListener(e, unlock, true));
+  return () => events.forEach((e) => window.removeEventListener(e, unlock, true));
 }
 
 // ---- mute store (for useSyncExternalStore) ----
@@ -51,7 +84,7 @@ type ToneOpts = { type?: OscillatorType; volume?: number; glideTo?: number; lowp
 function tone(freq: number, start: number, duration: number, opts: ToneOpts = {}, out?: AudioNode) {
   const { type = "triangle", volume = 0.25, glideTo, lowpass, vibrato } = opts;
   const ac = audio();
-  if (!ac || !master || muted) return;
+  if (!ac || !master || muted || ac.state !== "running") return;
   const t = ac.currentTime + start;
   const osc = ac.createOscillator();
   const gain = ac.createGain();
@@ -88,7 +121,7 @@ function noise(
   { from = 1800, to = 300, volume = 0.35, type = "bandpass" as BiquadFilterType, q = 0.8 } = {},
 ) {
   const ac = audio();
-  if (!ac || !master || muted) return;
+  if (!ac || !master || muted || ac.state !== "running") return;
   const t = ac.currentTime + start;
   const length = Math.max(1, Math.floor(ac.sampleRate * duration));
   const buffer = ac.createBuffer(1, length, ac.sampleRate);

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Flame, PartyPopper, RotateCcw, Wand2, X } from "lucide-react";
+import { Flame, PartyPopper, RotateCcw, Volume2, Wand2, X } from "lucide-react";
 import { burstAt, megaCelebration } from "@/lib/celebrate";
-import { sfx } from "@/lib/sound";
+import { audioStore, sfx } from "@/lib/sound";
 
 // x/y offsets (px) from the centre of the top tier; back-row candles sit higher.
 const CANDLES = [
@@ -152,6 +152,16 @@ export function CakeModal({
   const [lit, setLit] = useState<boolean[]>(() => CANDLES.map(() => true));
   const [celebrated, setCelebrated] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const unlocked = useSyncExternalStore(audioStore.subscribe, audioStore.getSnapshot, audioStore.getServerSnapshot);
+  // Celebration fired while the browser still had audio blocked — replay it once sound unlocks.
+  const missedSound = useRef(false);
+
+  useEffect(() => {
+    if (unlocked && open && missedSound.current) {
+      missedSound.current = false;
+      sfx.bigCelebration();
+    }
+  }, [unlocked, open]);
   const remaining = lit.filter(Boolean).length;
 
   // After the celebration plays out, take the visitor to the landing page.
@@ -186,6 +196,7 @@ export function CakeModal({
           setCelebrated(true);
           megaCelebration();
           sfx.blow();
+          if (!audioStore.getSnapshot()) missedSound.current = true;
           sfx.bigCelebration();
         }, 350),
       );
@@ -207,6 +218,7 @@ export function CakeModal({
     setTimeout(() => {
       setCelebrated(true);
       megaCelebration();
+      if (!audioStore.getSnapshot()) missedSound.current = true;
       sfx.bigCelebration();
     }, 350);
   }
@@ -249,6 +261,17 @@ export function CakeModal({
           exit={{ opacity: 0 }}
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
+          {!unlocked && (
+            <motion.button
+              type="button"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0, scale: [1, 1.06, 1] }}
+              transition={{ scale: { duration: 1.2, repeat: Infinity } }}
+              className="fixed top-4 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-gradient-to-r from-primary via-rose to-gold px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgb(168_85_247/0.9)]"
+            >
+              <Volume2 className="size-4" /> Tap for sound
+            </motion.button>
+          )}
           <button
             ref={closeRef}
             type="button"
